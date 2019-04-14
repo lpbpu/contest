@@ -6,8 +6,8 @@ import (
 )
 
 type ipAssignment struct {
-	IpRangeStart string `json:"ipRangeStart"`
-	IpRangeEnd   string `json:"ipRangeEnd"`
+	IPRangeStart string `json:"ipRangeStart"`
+	IPRangeEnd   string `json:"ipRangeEnd"`
 }
 
 type route struct {
@@ -26,12 +26,12 @@ type v4assignmode struct {
 }
 
 type ncapabilities struct {
-	Id      uint64 `json:"id"`
+	ID      uint64 `json:"id"`
 	Default bool   `json:"default"`
 }
 
 type ntag struct {
-	Id      uint32 `json:"id"`
+	ID      uint32 `json:"id"`
 	Default bool   `json:"default"`
 }
 
@@ -40,7 +40,7 @@ type Networkconfig struct {
 	Capabilities      []ncapabilities `json:"capabilities"`
 	Creationtime      *uint64         `json:"creationTime"`
 	Enablebroadcast   *bool           `json:"enableBroadcast"`
-	Id                *string         `json:"id"`
+	ID                *string         `json:"id"`
 	IpassignmentPools []ipAssignment  `json:"ipAssignmentPools"`
 	Mtu               *uint16         `json:"mtu"`
 	Multicastlimit    *uint16         `json:"multicastLimit"`
@@ -71,7 +71,7 @@ type Memberconfig struct {
 	Ipassignments                []string    `json:"ipAssignments"`
 	Tags                         interface{} `json:"tags"`
 	Capabilities                 interface{} `json:"capabilities"`
-	Id                           *string     `json:"id"`
+	ID                           *string     `json:"id"`
 	Address                      *string     `json:"address"`
 	Nwid                         *string     `json:"nwid"`
 	Creationtime                 *uint64     `json:"creationTime"`
@@ -84,50 +84,77 @@ type Memberconfig struct {
 	Vrev                         *int        `json:"vRev"`
 }
 
+type Network struct {
+	config            Networkconfig
+	members           map[uint64]Memberconfig
+	activemembers     []uint64
+	authorizedmembers []uint64
+}
+
 type DB struct {
 	path     string
-	networks map[uint64]Networkconfig
+	networks map[uint64]Network
 }
 
 func NewDB(path string) *DB {
 	var db *DB
 
-	cfg := make(map[uint64]Networkconfig)
+	networks := make(map[uint64]Network)
 
 	db = &DB{
 		path:     path,
-		networks: cfg,
+		networks: networks,
 	}
 
 	return db
 }
 
-func (this *DB) Onnetworkchanged(old *Networkconfig, new *Networkconfig, push bool) {
+func (db *DB) Onnetworkchanged(old *Networkconfig, new *Networkconfig, push bool) {
 
 	if new != nil {
-		id, err := strconv.ParseUint(*new.Id, 16, 64)
+		var network Network
+
+		id, err := strconv.ParseUint(*new.ID, 16, 64)
 		if err != nil {
 			return
 		}
 
 		fmt.Printf("id=%d\n", id)
 
-		this.networks[id] = *new
+		network, ok := db.networks[id]
+		if !ok {
+			db.networks[id] = Network{}
+		}
+
+		network.config = *new
+
 		if push {
 			fmt.Printf("push to controller network changed\n")
 		}
 	} else if old != nil {
-		id, err := strconv.ParseUint(*old.Id, 16, 64)
+		id, err := strconv.ParseUint(*old.ID, 16, 64)
 		if err != nil {
 			return
 		}
 
-		delete(this.networks, id)
+		delete(db.networks, id)
 
 	}
 
 }
 
-func (this *DB) Onmemberchanged(old *Memberconfig, new *Memberconfig, push bool) {
+func (db *DB) Onmemberchanged(old *Memberconfig, new *Memberconfig, push bool) {
+	if old != nil {
+		/*
+			memberid, err1 := strconv.ParseUint(*old.ID, 16, 64)
+			if err1 != nil {
+				return
+			}
 
+			networkid, err2 := strconv.ParseUint(*old.Nwid, 16, 64)
+			if err2 != nil {
+				return
+			}*/
+
+	}
 }

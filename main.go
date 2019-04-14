@@ -34,7 +34,7 @@ func main() {
 
 			}*/
 
-	fdb, err := db.NewFileDB("E:\\go\\test\\root\\controller.d")
+	fdb, err := db.NewFileDB("D:\\GoProj\\test\\root")
 	if err != nil {
 		log.Fatal("New filedb failed", err)
 	}

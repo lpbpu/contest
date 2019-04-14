@@ -41,13 +41,13 @@ func NewFileDB(path string) (*FileDB, error) {
 				continue
 			}
 
-			if v.Id == nil {
+			if v.ID == nil {
 				continue
 			}
 
 			newdb.Onnetworkchanged(nil, &v, true)
 
-			memberpath := filepath.Join(networkpath, "/", *v.Id, "/member")
+			memberpath := filepath.Join(networkpath, "/", *v.ID, "/member")
 			mfiles, merr := ioutil.ReadDir(memberpath)
 			if merr != nil {
 				continue
